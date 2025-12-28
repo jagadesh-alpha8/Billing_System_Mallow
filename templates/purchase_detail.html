@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Purchase #{{ purchase.id }}</h3>
+<p><strong>Email:</strong> {{ purchase.customer_email }}</p>
+<p><strong>Date:</strong> {{ purchase.created_at }}</p>
+
+<table>
+  <tr>
+    <th>Product</th><th>Qty</th><th>Unit</th><th>Price</th><th>Tax %</th><th>Tax</th><th>Total</th>
+  </tr>
+  {% for item in purchase.items.all %}
+    <tr>
+      <td>{{ item.product.name }} ({{ item.product.product_id }})</td>
+      <td>{{ item.quantity }}</td>
+      <td>{{ item.unit_price }}</td>
+      <td>{{ item.purchase_price }}</td>
+      <td>{{ item.tax_percent }}</td>
+      <td>{{ item.tax_payable }}</td>
+      <td>{{ item.total_price_item }}</td>
+    </tr>
+  {% endfor %}
+</table>
+
+<h4>Customer denominations given</h4>
+<ul>
+  {% for cd in customer_denoms %}
+    <li>₹{{ cd.denomination_value }} x {{ cd.count_given }}</li>
+  {% empty %}
+    <li>No denominations recorded</li>
+  {% endfor %}
+</ul>
+
+
+<h4>Change returned to Customer</h4>
+<ul>
+  {% for c in purchase.change_breakdown.all %}
+    <li>₹{{ c.denomination_value }} x {{ c.count_returned }}</li>
+  {% empty %}
+    <li>No change</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'shop:purchases_list' %}?email={{ purchase.customer_email }}" class="btn btn-secondary">Back</a>
+<a href="{% url 'shop:billing_form' %}" class="btn btn-secondary">New Bill</a>
+{% endblock %}

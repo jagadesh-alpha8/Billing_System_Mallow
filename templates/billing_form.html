@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" id="billingForm">
+  {% csrf_token %}
+  <div class="grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 30px;">
+    
+    <!-- Left column -->
+    <div>
+      <h3>Billing page</h3>
+      <label>Customer Email</label><br>
+      <input type="email" name="customer_email" required style="width:100%;"><br><br>
+
+      <h4>Bill section</h4>
+      <div id="productLines"></div>
+      <button type="button" class="btn" id="addLineBtn">Add New</button>
+      <button type="button" class="btn btn-secondary" id="clearLinesBtn">Clear</button>
+
+      <br><br>
+      <label>Cash paid by customer (Amount)</label><br>
+    <span id="cashPaidDisplay">₹0</span>
+    <input type="hidden" name="cash_paid" id="cashPaidHidden">
+
+      <br><br>
+      <div class="row">
+        <button type="submit" class="btn">Generate Bill</button>
+        <a href="{% url 'shop:purchases_list' %}" class="btn btn-secondary">View Purchases</a>
+      </div>
+    </div>
+    
+    <!-- Right column -->
+    <div>
+        <h4>Customer Denominations</h4>
+        <table>
+            <tr><th>Value</th><th>Count</th></tr>
+            <tr><td>500</td><td><input type="number" name="d500" min="0" value="0"></td></tr>
+            <tr><td>100</td><td><input type="number" name="d100" min="0" value="0"></td></tr>
+            <tr><td>50</td><td><input type="number" name="d50" min="0" value="0"></td></tr>
+            <tr><td>20</td><td><input type="number" name="d20" min="0" value="0"></td></tr>
+            <tr><td>10</td><td><input type="number" name="d10" min="0" value="0"></td></tr>
+            <tr><td>5</td><td><input type="number" name="d5" min="0" value="0"></td></tr>
+            <tr><td>2</td><td><input type="number" name="d2" min="0" value="0"></td></tr>
+            <tr><td>1</td><td><input type="number" name="d1" min="0" value="0"></td></tr>
+        </table>
+    </div>
+    
+    <div>
+        <h4>Denominations (available in shop)</h4>
+        <p class="muted">These are managed in Admin and used to compute change.</p>
+        <table>
+            <tr><th>Value</th><th>Count</th></tr>
+            {% for d in denoms %}
+          <tr><td>{{ d.value }}</td><td>{{ d.count_available }}</td></tr>
+        {% empty %}
+          <tr><td colspan="2">No denominations configured.</td></tr>
+          {% endfor %}
+        </table>
+    </div>
+
+  </div>
+</form>
+
+<script>
+(function() {
+  const productLines = document.getElementById('productLines');
+  const addBtn = document.getElementById('addLineBtn');
+  const clearBtn = document.getElementById('clearLinesBtn');
+
+  function addLine(pid = '', qty = '') {
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <label>Product ID</label>
+      <input name="product_id[]" type="text" value="${pid}" required>
+      <label>Quantity</label>
+      <input name="quantity[]" type="number" min="1" value="${qty || 1}" required>
+      <button type="button" class="btn btn-secondary removeBtn">Remove</button>
+    `;
+    row.querySelector('.removeBtn').addEventListener('click', () => row.remove());
+    productLines.appendChild(row);
+  }
+
+  addBtn.addEventListener('click', () => addLine());
+  clearBtn.addEventListener('click', () => { productLines.innerHTML = ''; });
+  addLine(); addLine(); addLine();
+
+  // --- NEW: auto calculate cash paid ---
+  const denomInputs = document.querySelectorAll('input[name^="d"]');
+  const cashPaidDisplay = document.getElementById('cashPaidDisplay');
+  const cashPaidHidden = document.getElementById('cashPaidHidden');
+
+  function updateCashPaid() {
+    let total = 0;
+    denomInputs.forEach(input => {
+      const value = parseInt(input.name.substring(1)); // e.g. "d500" -> 500
+      const count = parseInt(input.value) || 0;
+      total += value * count;
+    });
+    cashPaidDisplay.textContent = "₹" + total;
+    cashPaidHidden.value = total;
+  }
+
+  denomInputs.forEach(input => {
+    input.addEventListener('input', updateCashPaid);
+  });
+
+  // initialize
+  updateCashPaid();
+})();
+</script>
+
+{% endblock %}

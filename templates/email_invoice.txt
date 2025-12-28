@@ -1,0 +1,18 @@
+Thank you for your purchase!
+
+Purchase ID: {{ purchase.id }}
+Date: {{ purchase.created_at }}
+Total (rounded): {{ purchase.rounded_down_net_total }}
+Cash paid: {{ purchase.cash_paid }}
+Balance payable: {{ purchase.balance_payable }}
+
+Items:
+{% for item in purchase.items.all %}
+- {{ item.product.name }} ({{ item.product.product_id }}) x {{ item.quantity }}: Unit {{ item.unit_price }} | Tax {{ item.tax_percent }}%
+  Purchase Price: {{ item.purchase_price }} | Tax: {{ item.tax_payable }} | Total: {{ item.total_price_item }}
+{% endfor %}
+
+Change returned:
+{% for c in purchase.change_breakdown.all %}
+- ₹{{ c.denomination_value }} x {{ c.count_returned }}
+{% endfor %}

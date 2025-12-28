@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Previous purchases</h3>
+<form method="get">
+  <label>Customer Email</label><br>
+  <input type="email" name="email" value="{{ email }}" style="width:100%;" required>
+  <br><br>
+  <button class="btn" type="submit">Search</button>
+</form><br><br>
+<a href="{% url 'shop:billing_form' %}" class="btn btn-secondary">New Bill</a>
+
+{% if email %}
+  <h4 class="muted">Results for {{ email }}</h4>
+  <table>
+    <tr><th>ID</th><th>Date</th><th>Net total</th><th>Rounded</th><th>Action</th></tr>
+    {% for p in purchases %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.created_at }}</td>
+        <td>{{ p.net_total }}</td>
+        <td>{{ p.rounded_down_net_total }}</td>
+        <td><a class="btn btn-secondary" href="{% url 'shop:purchase_detail' p.id %}">View</a></td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5">No purchases found.</td></tr>
+    {% endfor %}
+  </table>
+{% endif %}
+{% endblock %}

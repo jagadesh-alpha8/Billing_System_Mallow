@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Page 2 — Bill Summary</h3>
+
+<table>
+  <tr>
+    <th>Product ID</th>
+    <th>Unit Price</th>
+    <th>Quantity</th>
+    <th>Purchase Price</th>
+    <th>Tax % for item</th>
+    <th>Tax payable for item</th>
+    <th>Total price of the item</th>
+  </tr>
+  {% for item in purchase.items.all %}
+  <tr>
+    <td>{{ item.product.product_id }}</td>
+    <td>{{ item.unit_price }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.purchase_price }}</td>
+    <td>{{ item.tax_percent }}</td>
+    <td>{{ item.tax_payable }}</td>
+    <td>{{ item.total_price_item }}</td>
+  </tr>
+  {% endfor %}
+</table>
+
+<table>
+  <tr><td>Total price without tax:</td><td>{{ purchase.total_without_tax }}</td></tr>
+  <tr><td>Total tax payable:</td><td>{{ purchase.total_tax }}</td></tr>
+  <tr><td>Net price of the purchased item:</td><td>{{ purchase.net_total }}</td></tr>
+  <tr><td>Rounded down value of the purchased items net price:</td><td>{{ purchase.rounded_down_net_total }}</td></tr>
+  <tr><td>Balance payable to the customer:</td><td>{{ purchase.balance_payable }}</td></tr>
+</table>
+
+<h4>Customer denominations given</h4>
+<ul>
+  {% for cd in customer_denoms %}
+    <li>₹{{ cd.denomination_value }} x {{ cd.count_given }}</li>
+  {% empty %}
+    <li>No denominations recorded</li>
+  {% endfor %}
+</ul>
+
+<h4>Balance Denomination returned to customer:</h4>
+<ul>
+  {% for ch in purchase.change_breakdown.all %}
+    <li>₹{{ ch.denomination_value }} x {{ ch.count_returned }}</li>
+  {% empty %}
+    <div>No change returned.</div>
+  {% endfor %}
+</ul>
+<br>
+<div class="row">
+  <a href="{% url 'shop:billing_form' %}" class="btn btn-secondary">New Bill</a>
+  <a href="{% url 'shop:purchases_list' %}?email={{ purchase.customer_email }}" class="btn">View previous purchases</a>
+</div>
+{% endblock %}
